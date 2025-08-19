@@ -1,0 +1,375 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>To-Do List App</title>
+
+<style>
+  /* Animated gradient background */
+  @keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #74ebd5, #ACB6E5, #F7CAC9, #92A8D1);
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
+  }
+
+  .todo-container {
+    background: #ffffffdd; /* Slight transparency */
+    width: 420px;
+    margin: 50px 20px;
+    border-radius: 16px;
+    padding: 30px 35px;
+    box-shadow: 0 12px 32px rgba(15, 45, 42, 0.25);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    backdrop-filter: saturate(180%) blur(10px);
+  }
+
+  h2 {
+    text-align: center;
+    color: #0f2d2a;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    margin-bottom: 25px;
+    user-select: none;
+    font-size: 2.3rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  form {
+    display: flex;
+    margin-bottom: 28px;
+    gap: 10px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 14px 18px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: 2px solid #cfd8dc;
+    outline-offset: 3px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  input[type="text"]:focus {
+    border-color: #0f2d2a;
+    box-shadow: 0 0 10px #0f2d2a88;
+  }
+
+  button {
+    padding: 0 20px;
+    font-size: 20px;
+    font-weight: 700;
+    border: none;
+    background-color: #0f2d2a;
+    color: white;
+    cursor: pointer;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(15, 45, 42, 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button:hover, button:focus {
+    background-color: #094637;
+    box-shadow: 0 9px 22px rgba(9, 70, 55, 0.6);
+    transform: scale(1.1);
+    outline: none;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+    max-height: 55vh;
+  }
+
+  li {
+    background: #e9f1ef;
+    padding: 16px 22px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  li.completed {
+    text-decoration: line-through;
+    color: #8a9993;
+    background: #d6e4db;
+    box-shadow: inset 0 0 8px #8a999388;
+  }
+
+  .task-text {
+    flex: 1;
+    cursor: pointer;
+    font-size: 17px;
+    padding-right: 14px;
+    user-select: text;
+    transition: color 0.2s ease;
+  }
+
+  .task-text[contenteditable="true"] {
+    border-bottom: 2px solid #0f2d2a;
+    padding: 4px 7px;
+    outline: none;
+    background: #f3faf7;
+    border-radius: 6px;
+    user-select: auto;
+    box-shadow: 0 0 8px #0f2d2aaa;
+    transition: background-color 0.3s ease;
+  }
+
+   .actions button {
+  margin-left: 24px;        /* increased space between buttons */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 26px;          /* bigger icons */
+  color: #0f2d2a;
+  transition: color 0.3s ease, transform 0.15s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  padding: 8px;             /* added padding for bigger clickable area */
+  border-radius: 6px;       /* rounded shape for better UX */
+}
+
+.actions button:hover {
+  color: #094637;
+  transform: scale(1.3);
+}
+  .actions button:focus {
+    outline: 3px solid #0f2d2a;
+    outline-offset: 2px;
+  }
+
+  /* Animation for adding/removing tasks */
+  li.removing {
+    opacity: 0;
+    transform: translateX(120%);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  li.adding {
+    animation: fadeInUp 0.4s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* SVG Icon styles */
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+</style>
+</head>
+<body>
+
+<div class="todo-container" role="main" aria-label="To-Do List Application">
+  <h2>To-Do List</h2>
+  <form id="taskForm" aria-label="Add new task form">
+    <input type="text" id="taskInput" placeholder="Add a new task..." aria-required="true" aria-describedby="taskInputDesc" />
+    <button type="submit" aria-label="Add task">
+      <!-- Plus SVG icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </form>
+  <ul id="taskList" aria-live="polite" aria-relevant="additions removals"></ul>
+</div>
+
+<script>
+  const taskForm = document.getElementById('taskForm');
+  const taskInput = document.getElementById('taskInput');
+  const taskList = document.getElementById('taskList');
+
+  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  window.onload = () => {
+    renderTasks();
+  };
+
+  taskForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const taskText = taskInput.value.trim();
+    if (taskText) {
+      tasks.push({ text: taskText, completed: false, id: Date.now() });
+      saveTasks();
+      renderTasks(true);
+      taskInput.value = '';
+      taskInput.focus();
+    }
+  });
+
+  function renderTasks(addedNew = false) {
+    taskList.innerHTML = '';
+    tasks.forEach(task => {
+      const li = document.createElement('li');
+      li.className = task.completed ? 'completed' : '';
+      li.dataset.id = task.id;
+      if(addedNew && task === tasks[tasks.length-1]) {
+        li.classList.add('adding');
+      }
+
+      // Task text
+      const span = document.createElement('span');
+      span.className = 'task-text';
+      span.textContent = task.text;
+      span.contentEditable = false;
+      span.title = "Click to toggle completion. Double-click or ✏️ to edit.";
+      span.setAttribute('tabindex', '0');
+      
+      // Toggle complete on click or enter key
+      span.addEventListener('click', () => toggleComplete(task.id));
+      span.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleComplete(task.id);
+        }
+      });
+
+      // Enable edit on double click
+      span.addEventListener('dblclick', () => enableEdit(span, task.id));
+
+      li.appendChild(span);
+
+      // Actions container
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      // Edit button with SVG pencil icon
+      const editBtn = document.createElement('button');
+      editBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+        </svg>
+      `;
+      editBtn.title = 'Edit task';
+      editBtn.setAttribute('aria-label', 'Edit task');
+      editBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        enableEdit(span, task.id);
+      });
+
+      // Delete button with trash icon
+      const delBtn = document.createElement('button');
+      delBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+        </svg>
+      `;
+      delBtn.title = 'Delete task';
+      delBtn.setAttribute('aria-label', 'Delete task');
+      delBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        removeTask(task.id, li);
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      li.appendChild(actions);
+
+      taskList.appendChild(li);
+    });
+  }
+
+  function toggleComplete(id) {
+    tasks = tasks.map(task => task.id === id ? {...task, completed: !task.completed} : task);
+    saveTasks();
+    renderTasks();
+  }
+
+  // Animate removal before deleting
+  function removeTask(id, liElement) {
+    liElement.classList.add('removing');
+    liElement.style.pointerEvents = 'none';
+    setTimeout(() => {
+      tasks = tasks.filter(task => task.id !== id);
+      saveTasks();
+      renderTasks();
+    }, 400);
+  }
+
+  function enableEdit(span, id) {
+    span.contentEditable = true;
+    span.focus();
+
+    function saveEdit() {
+      let newText = span.textContent.trim();
+      if (newText === '') {
+        alert("Task cannot be empty!");
+        span.textContent = tasks.find(t => t.id === id).text; // revert
+      } else {
+        tasks = tasks.map(task => task.id === id ? {...task, text: newText} : task);
+        saveTasks();
+      }
+      span.contentEditable = false;
+      span.removeEventListener('blur', saveEdit);
+      span.removeEventListener('keydown', keydownHandler);
+      renderTasks();
+    }
+
+    function keydownHandler(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        span.blur();
+      }
+      if (e.key === 'Escape') {
+        span.textContent = tasks.find(t => t.id === id).text;
+        span.contentEditable = false;
+        span.removeEventListener('blur', saveEdit);
+        span.removeEventListener('keydown', keydownHandler);
+      }
+    }
+
+    span.addEventListener('blur', saveEdit);
+    span.addEventListener('keydown', keydownHandler);
+  }
+
+  function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+</script>
+
+</body>
+</html>

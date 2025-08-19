@@ -1,0 +1,241 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TicTock Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #0F2D2A;
+  }
+  .container {
+    background: white;
+    padding: 40px 45px;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+  }
+
+  h1 {
+    font-weight: 600;
+    font-size: 2.6rem;
+    margin-bottom: 30px;
+    user-select: none;
+  }
+  
+  label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  input[type="date"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 22px;
+    font-size: 1.15rem;
+    border-radius: 10px;
+    border: 2.5px solid #cfd8dc;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    outline-offset: 3px;
+    font-weight: 500;
+    color: #1a1a1a;
+  }
+  input[type="date"]:focus {
+    border-color: #0F2D2A;
+    box-shadow: 0 0 14px #0F2D2Aaa;
+  }
+  .buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  button {
+    flex: 1;
+    padding: 15px 0;
+    background-color: #0F2D2A;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 9px 26px rgba(15, 45, 42, 0.5);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    user-select: none;
+    letter-spacing: 1.1px;
+  }
+  button:hover, button:focus {
+    background-color: #094637;
+    box-shadow: 0 14px 38px rgba(9, 70, 55, 0.8);
+    transform: scale(1.05);
+    outline: none;
+  }
+  .result {
+    text-align: left;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #0F2D2A;
+    border: 2.5px solid #0F2D2A;
+    border-radius: 14px;
+    padding: 20px 25px;
+    background: #e9f1ef;
+    box-shadow: inset 0 0 12px #0F2D2A55;
+    user-select: text;
+    line-height: 1.5;
+    min-height: 240px;
+    white-space: pre-wrap;
+  }
+  .error {
+    color: #e63946;
+    font-weight: 600;
+    margin-top: 12px;
+    user-select: none;
+    min-height: 24px;
+  }
+  .label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .label-with-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: #0F2D2A;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" role="main" aria-label="Advanced Age Calculator">
+  <h1>Age Calculator</h1>
+
+  <form id="ageForm" onsubmit="return calculateAge(event)" novalidate>
+    <label for="dob" class="label-with-icon">
+      <!-- Simple user icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="7" r="5"/><path d="M12 14c-5 0-8 2-8 5v1h16v-1c0-3-3-5-8-5z"/></svg>
+      Date of Birth
+    </label>
+    <input type="date" id="dob" name="dob" max="" required aria-required="true" />
+
+    <label for="ageAt" class="label-with-icon">
+      <!-- Calendar icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Age at Date
+    </label>
+    <input type="date" id="ageAt" name="ageAt" max="" aria-describedby="ageAtHelp" />
+
+    <div class="buttons">
+      <button type="submit" aria-label="Calculate Age">Calculate</button>
+      <button type="button" id="resetBtn" aria-label="Reset Form">Reset</button>
+    </div>
+  </form>
+
+  <div id="result" class="result" aria-live="polite" aria-atomic="true"></div>
+  <div id="error" class="error" role="alert" aria-live="assertive" aria-atomic="true"></div>
+</div>
+
+<script>
+  // Set max dates to today so future dates can't be picked
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('dob').setAttribute('max', todayStr);
+  document.getElementById('ageAt').setAttribute('max', todayStr);
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('ageForm').reset();
+    document.getElementById('result').textContent = '';
+    document.getElementById('error').textContent = '';
+  });
+
+  function calculateAge(e) {
+    e.preventDefault();
+    const errorDiv = document.getElementById('error');
+    const resultDiv = document.getElementById('result');
+    errorDiv.textContent = '';
+    resultDiv.textContent = '';
+
+    const dobInput = document.getElementById('dob').value;
+    const ageAtInput = document.getElementById('ageAt').value;
+
+    if (!dobInput) {
+      errorDiv.textContent = 'Please enter Date of Birth.';
+      return false;
+    }
+
+    const dob = new Date(dobInput);
+    const ageAt = ageAtInput ? new Date(ageAtInput) : new Date();
+
+    if (dob > ageAt) {
+      errorDiv.textContent = 'Date of Birth cannot be after Age at Date.';
+      return false;
+    }
+
+    // Calculate difference
+    let years = ageAt.getFullYear() - dob.getFullYear();
+    let months = ageAt.getMonth() - dob.getMonth();
+    let days = ageAt.getDate() - dob.getDate();
+
+    if (days < 0) {
+      months--;
+      days += daysInMonth(ageAt.getMonth() - 1, ageAt.getFullYear());
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    // Weeks calculation (1 week = 7 days)
+    const totalDays = Math.floor((ageAt - dob) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(totalDays / 7);
+    const remDays = totalDays % 7;
+
+    // Months total (years * 12 + months)
+    const totalMonths = years * 12 + months;
+
+    // Hours, minutes, seconds
+    const totalHours = Math.floor((ageAt - dob) / (1000 * 60 * 60));
+    const totalMinutes = Math.floor((ageAt - dob) / (1000 * 60));
+    const totalSeconds = Math.floor((ageAt - dob) / 1000);
+
+    // Format with commas (Indian style)
+    function formatNumber(num) {
+      return num.toLocaleString('en-IN');
+    }
+
+    // Show result with weeks, days, months etc
+    resultDiv.textContent = 
+      `Your Age:\n` +
+      `${years} Years, ${months} Months, ${weeks % 4} Weeks, and ${days} Days\n\n` +
+      `Age In Months:\n${formatNumber(totalMonths)} Months, ${weeks % 4} Weeks, ${days} Days\n\n` +
+      `Age In Weeks:\n${formatNumber(weeks)} Weeks\n\n` +
+      `Age In Days:\n${formatNumber(totalDays)} Days\n\n` +
+      `Age In Hours:\n${formatNumber(totalHours)} Hours\n\n` +
+      `Age In Minutes:\n${formatNumber(totalMinutes)} Minutes\n\n` +
+      `Age In Seconds:\n${formatNumber(totalSeconds)} Seconds`;
+
+    return false;
+  }
+
+  function daysInMonth(month, year) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+</script>
+
+</body>
+</html>
